@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:travels/ui/map.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -14,7 +15,9 @@ class _HomeState extends State<Home> {
 
   _removeTravel() {}
 
-  _newTravel() {}
+  _newTravel() {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => TravelMap()));
+  }
 
   @override
   Widget build(BuildContext context) {
