@@ -10,7 +10,9 @@ import 'package:travels/helpers/location_helper.dart';
 import 'package:travels/model/travel.dart';
 
 class TravelMap extends StatefulWidget {
-  const TravelMap({super.key});
+  const TravelMap({super.key, this.travelId});
+
+  final String? travelId;
 
   @override
   State<TravelMap> createState() => _TravelMapState();
@@ -37,7 +39,7 @@ class _TravelMapState extends State<TravelMap> {
         CameraPosition(
           target: LatLng(position.latitude, position.longitude),
           zoom: 16,
-        ),
+        )
       );
     });
   }
@@ -62,25 +64,43 @@ class _TravelMapState extends State<TravelMap> {
       position,
     );
 
+    _createMarker(travel);
+
+    _db.collection(FirebaseHelpers.collections.travels).add(travel.toJson());
+  }
+
+  _createMarker(Travel travel) {
     var marker = Marker(
-      markerId: MarkerId("travel-${position.latitude}-${position.longitude}"),
-      position: position,
+      markerId: MarkerId("travel-${travel.coordinates.latitude}-${travel.coordinates.longitude}"),
+      position: travel.coordinates,
       infoWindow: InfoWindow(
-        title:
-            "${firstPlaceMark.thoroughfare} - ${firstPlaceMark.subThoroughfare}",
+        title: travel.title,
       ),
     );
 
     setState(() {
       _markers.add(marker);
     });
+  }
 
-    _db.collection(FirebaseHelpers.collections.travels).add(travel.toJson());
+  _getTravelById(String id) async {
+    var docSnapshot = await _db.collection(FirebaseHelpers.collections.travels).doc(id).get();
+    var travel = Travel.fromMap(docSnapshot.data()!);
+
+    _createMarker(travel);
+    _moveCamera(CameraPosition(
+      target: LatLng(travel.coordinates.latitude, travel.coordinates.longitude),
+      zoom: 17,
+    ));
   }
 
   @override
   void initState() {
-    _createLocationListener();
+    if (widget.travelId == null) {
+      _createLocationListener();
+    } else {
+      _getTravelById(widget.travelId!);
+    }
 
     super.initState();
   }
