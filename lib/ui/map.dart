@@ -1,10 +1,13 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:travels/helpers/firebase_helper.dart';
 import 'package:travels/helpers/location_helper.dart';
+import 'package:travels/model/travel.dart';
 
 class TravelMap extends StatefulWidget {
   const TravelMap({super.key});
@@ -14,6 +17,7 @@ class TravelMap extends StatefulWidget {
 }
 
 class _TravelMapState extends State<TravelMap> {
+  final _db = FirebaseFirestore.instance;
   final _controller = Completer<GoogleMapController>();
 
   final Set<Marker> _markers = {};
@@ -53,6 +57,10 @@ class _TravelMapState extends State<TravelMap> {
     );
 
     var firstPlaceMark = placemarks.first;
+    var travel = Travel(
+      "${firstPlaceMark.thoroughfare} - ${firstPlaceMark.subThoroughfare}",
+      position,
+    );
 
     var marker = Marker(
       markerId: MarkerId("travel-${position.latitude}-${position.longitude}"),
@@ -60,13 +68,14 @@ class _TravelMapState extends State<TravelMap> {
       infoWindow: InfoWindow(
         title:
             "${firstPlaceMark.thoroughfare} - ${firstPlaceMark.subThoroughfare}",
-        snippet: "Teste"
       ),
     );
 
     setState(() {
       _markers.add(marker);
     });
+
+    _db.collection(FirebaseHelpers.collections.travels).add(travel.toJson());
   }
 
   @override
