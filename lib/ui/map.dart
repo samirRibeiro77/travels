@@ -20,7 +20,9 @@ class _TravelMapState extends State<TravelMap> {
 
   var _cameraPosition = CameraPosition(target: LatLng(0, 0), zoom: 10);
 
-  _createLocationListener() {
+  _createLocationListener() async {
+    await LocationHelper.isLocationEnabled();
+
     var settings = LocationSettings(
       accuracy: LocationAccuracy.high,
       distanceFilter: 5,
